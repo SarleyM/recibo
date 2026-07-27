@@ -1,0 +1,4 @@
+relatorio_pagamentos.xlsx
+*.pdf
+__pycache__/
+.ipynb_checkpoints/
