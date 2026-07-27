@@ -6,10 +6,27 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import streamlit as st
 
-# Configuração da Página do Streamlit (Deve ser a primeira instrução do Streamlit)
+# Configuração da Página do Streamlit com ícone e mensagem customizados
 st.set_page_config(
-    page_title="Sistema de Recibos e Vales", page_icon="📄", layout="wide"
+    page_title="Sistema de Recibos A3", 
+    page_icon="🤝",  # Ícone de aperto de mãos (representando acordo/pagamento)
+    layout="wide"
 )
+
+# Mensagem de carregamento customizada (aparece na tela preta antes do app abrir)
+st.markdown("""
+    <style>
+        div.stApp {
+            background-image: url(https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbjc2dDFobzNrdzNhaHR4N3hxbXg0aW80dGRsdWNjOXh5b3g1bGFucyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l49K2rmETDVrqy7yM/giphy.gif);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.5;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+st.info("Carregando Sistema Financeiro A3... Aguarde um momento.")
 
 # Estilização CSS customizada para deixar o visual moderno
 st.markdown("""
