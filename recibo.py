@@ -8,7 +8,7 @@ import streamlit as st
 
 # Configuração da Página do Streamlit com ícone customizado
 st.set_page_config(
-    page_title="Sistema de Recibos A3",
+    page_title="Sistema de Recibos",
     page_icon="🤝",  # Ícone de aperto de mãos na aba do navegador
     layout="wide",
 )
@@ -181,12 +181,6 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
 
 
 # --- INTERFACE PRINCIPAL ---
-
-# Exibindo a imagem de dinheiro do projeto de forma elegante no topo (se existir)
-if os.path.exists("dinheiro.png"):
-  col_img1, col_img2, col_img3 = st.columns([2, 1, 2])
-  with col_img2:
-    st.image("dinheiro.png", width=100)
 
 st.title("💹 Sistema de Emissão de Recibos e Vales")
 st.markdown(
