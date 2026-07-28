@@ -15,14 +15,7 @@ st.set_page_config(
 
 # --- INTERFACE PRINCIPAL ---
 
-# Exibindo a imagem de forma limpa no topo do aplicativo (centralizada)
-col_img1, col_img2, col_img3 = st.columns([1, 1, 1])
-with col_img2:
-  # Mostra a imagem com um tamanho proporcional
-  if os.path.exists("dinheiro.png"):
-    st.image("dinheiro.png", width=120)
-
-st.title("📄 Sistema de Emissão de Recibos e Vales")
+st.title(" 💹Sistema de Emissão de Recibos e Vales")
 st.markdown(
     "Gerencie pagamentos e emissores de recibos de forma rápida, moderna e"
     " organizada."
