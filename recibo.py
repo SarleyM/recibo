@@ -28,6 +28,23 @@ st.markdown("""
 
 st.info("Carregando Sistema Financeiro A3... Aguarde um momento.")
 
+# URL da sua imagem (exemplo)
+IMAGE_URL = "https://i.imgur.com/dinheiro.png" # Substitua pelo seu link
+
+st.set_page_config(
+    page_title="Sistema de Recibos A3", 
+    page_icon=IMAGE_URL, # Usa sua imagem como ícone de aba e carregamento
+    layout="wide"
+)
+
+# Opcional: Colocar a mesma imagem gigante no centro da tela enquanto carrega
+st.markdown(f"""
+    <div style="display: flex; justify-content: center; align-items: center; height: 70vh;">
+        <img src="{IMAGE_URL}" width="200px" alt="Carregando...">
+    </div>
+    <h3 style="text-align: center; color: #2e7d32;">Acessando sistema de pagamentos...</h3>
+""", unsafe_allow_html=True)
+
 # Estilização CSS customizada para deixar o visual moderno
 st.markdown("""
     <style>
