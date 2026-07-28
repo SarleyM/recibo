@@ -216,9 +216,9 @@ with aba_emissao:
 
     with col3:
       st.markdown("##### 🏦 Dados Bancários")
-      banco = st.text_input("Banco Portador", value="DINHEIRO")
+      banco = st.text_input("Banco Portador", value="")
       tipo_pagamento = st.text_input(
-          "Tipo (ex: PIX, Dinheiro, ND)", value="ND"
+          "Tipo (ex: PIX, Dinheiro, Depósito)", value="ND"
       )
 
     st.markdown("---")
