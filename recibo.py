@@ -6,28 +6,12 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import streamlit as st
 
-# Configuração da Página do Streamlit com ícone e mensagem customizados
+# Configuração da Página do Streamlit com ícone customizado
 st.set_page_config(
-    page_title="Sistema de Recibos A3", 
-    page_icon="🤝",  # Ícone de aperto de mãos (representando acordo/pagamento)
-    layout="wide"
+    page_title="Sistema de Recibos A3",
+    page_icon="🤝",  # Ícone de aperto de mãos na aba do navegador
+    layout="wide",
 )
-
-# --- INTERFACE PRINCIPAL ---
-
-st.title(" 💹Sistema de Emissão de Recibos e Vales")
-st.markdown(
-    "Gerencie pagamentos e emissores de recibos de forma rápida, moderna e"
-    " organizada."
-)
-st.divider()
-# Opcional: Colocar a mesma imagem gigante no centro da tela enquanto carrega
-st.markdown(f"""
-    <div style="display: flex; justify-content: center; align-items: center; height: 70vh;">
-        <img src="{IMAGE_URL}" width="200px" alt="Carregando...">
-    </div>
-    <h3 style="text-align: center; color: #2e7d32;">Acessando sistema de pagamentos...</h3>
-""", unsafe_allow_html=True)
 
 # Estilização CSS customizada para deixar o visual moderno
 st.markdown("""
@@ -198,7 +182,13 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
 
 # --- INTERFACE PRINCIPAL ---
 
-st.title("📄 Sistema de Emissão de Recibos e Vales")
+# Exibindo a imagem de dinheiro do projeto de forma elegante no topo (se existir)
+if os.path.exists("dinheiro.png"):
+  col_img1, col_img2, col_img3 = st.columns([2, 1, 2])
+  with col_img2:
+    st.image("dinheiro.png", width=100)
+
+st.title("💹 Sistema de Emissão de Recibos e Vales")
 st.markdown(
     "Gerencie pagamentos e emissores de recibos de forma rápida, moderna e"
     " organizada."
