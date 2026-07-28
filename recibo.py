@@ -6,11 +6,11 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import streamlit as st
 
-# Configuração da Página do Streamlit usando o arquivo local dinheiros.png ou o caminho dele
+# Configuração da Página do Streamlit com ícone e mensagem customizados
 st.set_page_config(
-    page_title="Sistema de Recibos A3",
-    page_icon="dinheiro.png",  # O Streamlit lê imagens locais na mesma pasta automaticamente!
-    layout="wide",
+    page_title="Sistema de Recibos A3", 
+    page_icon="🤝",  # Ícone de aperto de mãos (representando acordo/pagamento)
+    layout="wide"
 )
 
 # --- INTERFACE PRINCIPAL ---
