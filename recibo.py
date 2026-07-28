@@ -218,17 +218,17 @@ with aba_emissao:
       st.markdown("##### 🏦 Dados Bancários")
       banco = st.text_input("Banco Portador", value="")
       tipo_pagamento = st.text_input(
-          "Tipo (ex: PIX, Dinheiro, Depósito)", value="ND"
+          "Tipo (ex: PIX, Dinheiro, Depósito)", value=""
       )
 
     st.markdown("---")
     col4, col5, col6 = st.columns(3)
     with col4:
-      agencia = st.text_input("Agência", value="ND")
+      agencia = st.text_input("Agência", value="")
     with col5:
-      conta = st.text_input("Conta", value="ND")
+      conta = st.text_input("Conta", value="")
     with col6:
-      chave_pix = st.text_input("Chave PIX", value="ND")
+      chave_pix = st.text_input("Chave PIX", value="")
 
     titular = st.text_input(
         "Titular da Conta (Opcional - preenche com o nome se vazio)"
