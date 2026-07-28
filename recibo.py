@@ -6,37 +6,28 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import streamlit as st
 
-# Configuração da Página do Streamlit com ícone e mensagem customizados
+# Configuração da Página do Streamlit usando o arquivo local dinheiros.png ou o caminho dele
 st.set_page_config(
-    page_title="Sistema de Recibos A3", 
-    page_icon="🤝",  # Ícone de aperto de mãos (representando acordo/pagamento)
-    layout="wide"
+    page_title="Sistema de Recibos A3",
+    page_icon="dinheiro.png",  # O Streamlit lê imagens locais na mesma pasta automaticamente!
+    layout="wide",
 )
 
-# Mensagem de carregamento customizada (aparece na tela preta antes do app abrir)
-st.markdown("""
-    <style>
-        div.stApp {
-            background-image: url(https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbjc2dDFobzNrdzNhaHR4N3hxbXg0aW80dGRsdWNjOXh5b3g1bGFucyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l49K2rmETDVrqy7yM/giphy.gif);
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            opacity: 0.5;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# --- INTERFACE PRINCIPAL ---
 
-st.info("Carregando Sistema Financeiro A3... Aguarde um momento.")
+# Exibindo a imagem de forma limpa no topo do aplicativo (centralizada)
+col_img1, col_img2, col_img3 = st.columns([1, 1, 1])
+with col_img2:
+  # Mostra a imagem com um tamanho proporcional
+  if os.path.exists("dinheiro.png"):
+    st.image("dinheiro.png", width=120)
 
-# URL da sua imagem (exemplo)
-IMAGE_URL = "https://i.imgur.com/dinheiro.png" # Substitua pelo seu link
-
-st.set_page_config(
-    page_title="Sistema de Recibos A3", 
-    page_icon=IMAGE_URL, # Usa sua imagem como ícone de aba e carregamento
-    layout="wide"
+st.title("📄 Sistema de Emissão de Recibos e Vales")
+st.markdown(
+    "Gerencie pagamentos e emissores de recibos de forma rápida, moderna e"
+    " organizada."
 )
-
+st.divider()
 # Opcional: Colocar a mesma imagem gigante no centro da tela enquanto carrega
 st.markdown(f"""
     <div style="display: flex; justify-content: center; align-items: center; height: 70vh;">
