@@ -217,7 +217,7 @@ if not st.session_state["autenticado"]:
 
   with col_centro:
     # Exibindo o logo centralizado (certifique-se de que o arquivo 'gutaflow.png' está na mesma pasta)
-    st.image("gutaflow.png", width=140, use_container_width=False)
+    st.image("gutaflow.png", width=320, use_container_width=False)
 
     if not st.session_state["modo_cadastro"]:
       st.markdown(
