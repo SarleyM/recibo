@@ -215,17 +215,15 @@ if "autenticado" not in st.session_state:
   st.session_state["razao_social"] = None
   st.session_state["cnpj"] = None
 
+if "modo_cadastro" not in st.session_state:
+  st.session_state["modo_cadastro"] = False
+
 if not st.session_state["autenticado"]:
-  st.title("🔐 Acesso ao Sistema de Recibos")
-  st.markdown(
-      "Faça login com as credenciais da sua empresa ou cadastre uma nova"
-      " empresa abaixo."
-  )
+  if not st.session_state["modo_cadastro"]:
+    # TELA DE LOGIN
+    st.title("🔐 Acesso ao Sistema de Recibos")
+    st.markdown("Faça login com as credenciais da sua empresa.")
 
-  # Criando abas na tela de login para alternar entre Entrar e Cadastrar
-  aba_login, aba_cadastro = st.tabs(["🔑 Entrar", "🏢 Cadastrar Nova Empresa"])
-
-  with aba_login:
     with st.form("form_login"):
       usuario_input = st.text_input("Usuário da Empresa")
       senha_input = st.text_input("Senha", type="password")
@@ -254,13 +252,26 @@ if not st.session_state["autenticado"]:
       st.markdown("- **Usuário:** `a3_aluminio` | **Senha:** `123456`")
       st.markdown("- **Usuário:** `construtora_alpha` | **Senha:** `123456`")
 
-  with aba_cadastro:
-    with st.form("form_cadastro_empresa"):
+    st.markdown("---")
+    st.markdown("Ainda não tem cadastro para sua empresa?")
+    if st.button("🏢 Cadastrar Nova Empresa"):
+      st.session_state["modo_cadastro"] = True
+      st.rerun()
+
+  else:
+    # TELA DE CADASTRO COM CAMPOS QUE LIMPAM APÓS O SUCESSO
+    st.title("🏢 Cadastro de Nova Empresa")
+    st.markdown(
+        "Preencha os dados abaixo para registrar sua empresa no sistema."
+    )
+
+    with st.form("form_cadastro_empresa", clear_on_submit=True):
       nova_razao = st.text_input("Razão Social da Empresa")
       novo_cnpj = st.text_input("CNPJ")
       novo_usuario = st.text_input("Nome de Usuário para Acesso")
       nova_senha = st.text_input("Senha", type="password")
-      btn_cadastrar = st.form_submit_button("✨ Cadastrar Empresa")
+
+      btn_cadastrar = st.form_submit_button("✨ Finalizar Cadastro")
 
       if btn_cadastrar:
         if (
@@ -286,9 +297,14 @@ if not st.session_state["autenticado"]:
             )
             df_empresas.to_csv(DB_EMPRESAS, index=False)
             st.success(
-                "Empresa cadastrada com sucesso! Vá para a aba 'Entrar' e"
-                " acesse o sistema."
+                "Empresa cadastrada com sucesso! Os campos foram limpos para"
+                " novo cadastro."
             )
+
+    st.markdown("---")
+    if st.button("🔙 Voltar para a Tela de Login"):
+      st.session_state["modo_cadastro"] = False
+      st.rerun()
 
 else:
   # --- INTERFACE PRINCIPAL (APÓS O LOGIN) ---
