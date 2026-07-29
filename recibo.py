@@ -1,4 +1,5 @@
 from datetime import datetime
+import hashlib
 import os
 import pandas as pd
 from reportlab.lib import colors
@@ -8,8 +9,8 @@ import streamlit as st
 
 # Configuração da Página do Streamlit com ícone customizado
 st.set_page_config(
-    page_title="Sistema de Recibos",
-    page_icon="🤝",  # Ícone de aperto de mãos na aba do navegador
+    page_title="Sistema Multiempresa de Recibos",
+    page_icon="🤝",
     layout="wide",
 )
 
@@ -38,11 +39,37 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Nome do arquivo de relatório
-EXCEL_RELATORIO = "relatorio_pagamentos.xlsx"
+# Arquivo de cadastro de empresas simulado
+DB_EMPRESAS = "empresas_cadastradas.csv"
 
 
-def gerar_pdf_recibo(dados, filename="recibo.pdf"):
+def hash_senha(senha):
+  return hashlib.sha256(senha.encode()).hexdigest()
+
+
+def inicializar_banco_empresas():
+  if not os.path.exists(DB_EMPRESAS):
+    df_init = pd.DataFrame([
+        {
+            "usuario": "a3_aluminio",
+            "senha": hash_senha("123456"),
+            "razao_social": "A3 SERVIÇOS E PRODUTOS EM ALUMÍNIO LTDA",
+            "cnpj": "00.000.000/0001-00",
+        },
+        {
+            "usuario": "construtora_alpha",
+            "senha": hash_senha("123456"),
+            "razao_social": "ALPHA CONSTRUTORA E INCORPORADORA S/A",
+            "cnpj": "11.111.111/0001-11",
+        },
+    ])
+    df_init.to_csv(DB_EMPRESAS, index=False)
+
+
+inicializar_banco_empresas()
+
+
+def gerar_pdf_recibo(dados, razao_social, cnpj_empresa, filename="recibo.pdf"):
   c = canvas.Canvas(filename, pagesize=A4)
   largura, altura = A4
 
@@ -50,24 +77,27 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
   c.setFillColor(colors.HexColor("#1b5e20"))
   c.rect(0, altura - 20, largura, 20, fill=1, stroke=0)
 
-  # Cabeçalho da Empresa
+  # Cabeçalho da Empresa (Dinâmico com base no Login)
   c.setFillColor(colors.black)
-  c.setFont("Helvetica-Bold", 13)
-  c.drawString(50, altura - 55, "A3 SERVIÇOS E PRODUTOS EM ALUMÍNIO LTDA")
+  c.setFont("Helvetica-Bold", 12)
+  c.drawString(50, altura - 55, razao_social)
+  c.setFont("Helvetica", 9)
+  c.setFillColor(colors.HexColor("#666666"))
+  c.drawString(50, altura - 70, f"CNPJ: {cnpj_empresa}")
 
   c.setFont("Helvetica-Bold", 18)
   c.setFillColor(colors.HexColor("#2e7d32"))
-  c.drawCentredString(largura / 2, altura - 105, "RECIBO DE PAGAMENTO / VALE")
+  c.drawCentredString(largura / 2, altura - 110, "RECIBO DE PAGAMENTO / VALE")
 
   # Linha divisória
   c.setStrokeColor(colors.HexColor("#cccccc"))
   c.setLineWidth(1)
-  c.line(50, altura - 120, largura - 50, altura - 120)
+  c.line(50, altura - 125, largura - 50, altura - 125)
 
   # Informações principais
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  y = altura - 150
+  y = altura - 155
 
   c.drawString(50, y, "FUNCIONÁRIO(A) / RECEBEDOR:")
   c.setFont("Helvetica", 11)
@@ -96,9 +126,7 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
   c.drawString(50, y, "DATA DE EMISSÃO:")
   c.setFont("Helvetica", 11)
   c.setFillColor(colors.black)
-  c.drawString(
-      220, y, f"{datetime.now().strftime('%d/%m/%Y às %H:%M')}"
-  )
+  c.drawString(220, y, f"{datetime.now().strftime('%d/%m/%Y às %H:%M')}")
 
   y -= 45
   # Tabela de Valores (Caixa de Destaque)
@@ -123,14 +151,14 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
   y -= 25
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  c.drawString(50, y, f"Forma/Banco:")
+  c.drawString(50, y, "Forma/Banco:")
   c.setFont("Helvetica", 10)
   c.setFillColor(colors.black)
   c.drawString(130, y, f"{dados['BANCO PORTADOR']}")
 
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  c.drawString(320, y, f"Tipo:")
+  c.drawString(320, y, "Tipo:")
   c.setFont("Helvetica", 10)
   c.setFillColor(colors.black)
   c.drawString(380, y, f"{dados['TIPO']}")
@@ -138,14 +166,14 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
   y -= 22
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  c.drawString(50, y, f"Agência:")
+  c.drawString(50, y, "Agência:")
   c.setFont("Helvetica", 10)
   c.setFillColor(colors.black)
   c.drawString(130, y, f"{dados['AGENCIA']}")
 
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  c.drawString(320, y, f"Conta:")
+  c.drawString(320, y, "Conta:")
   c.setFont("Helvetica", 10)
   c.setFillColor(colors.black)
   c.drawString(380, y, f"{dados['CONTA']}")
@@ -153,14 +181,14 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
   y -= 22
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  c.drawString(50, y, f"Chave PIX:")
+  c.drawString(50, y, "Chave PIX:")
   c.setFont("Helvetica", 10)
   c.setFillColor(colors.black)
   c.drawString(130, y, f"{dados['CHAVE PIX']}")
 
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
-  c.drawString(320, y, f"Titular:")
+  c.drawString(320, y, "Titular:")
   c.setFont("Helvetica", 10)
   c.setFillColor(colors.black)
   c.drawString(380, y, f"{dados['TITULAR DA CONTA']}")
@@ -180,150 +208,213 @@ def gerar_pdf_recibo(dados, filename="recibo.pdf"):
   c.save()
 
 
-# --- INTERFACE PRINCIPAL ---
+# --- CONTROLE DE SESSÃO E LOGIN ---
+if "autenticado" not in st.session_state:
+  st.session_state["autenticado"] = False
+  st.session_state["usuario"] = None
+  st.session_state["razao_social"] = None
+  st.session_state["cnpj"] = None
 
-st.title("💹 Sistema de Emissão de Recibos e Vales")
-st.markdown(
-    "Gerencie pagamentos e emissores de recibos de forma rápida, moderna e"
-    " organizada."
-)
-st.divider()
+if not st.session_state["autenticado"]:
+  st.title("🔐 Acesso ao Sistema de Recibos")
+  st.markdown(
+      "Faça login com as credenciais da sua empresa para emitir e gerenciar"
+      " recibos."
+  )
 
-# Criação de Abas para Organização
-aba_emissao, aba_relatorio = st.tabs(
-    ["📝 Emitir Novo Recibo", "📊 Relatório e Histórico"]
-)
+  with st.form("form_login"):
+    usuario_input = st.text_input("Usuário da Empresa")
+    senha_input = st.text_input("Senha", type="password")
+    btn_login = st.form_submit_button("Entrar no Sistema")
 
-with aba_emissao:
-  st.subheader("Preencha os dados do recibo")
+    if btn_login:
+      df_empresas = pd.read_csv(DB_EMPRESAS)
+      empresa_encontrada = df_empresas[
+          (df_empresas["usuario"] == usuario_input)
+          & (df_empresas["senha"] == hash_senha(senha_input))
+      ]
 
-  with st.form("form_recibo", clear_on_submit=False):
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-      st.markdown("##### 👤 Colaborador")
-      funcionario = st.text_input("Nome do Funcionário(a)")
-      equipe = st.selectbox("Equipe", ["NOITE", "MANHA", "TARDE", "GERAL"])
-
-    with col2:
-      st.markdown("##### 💰 Financeiro")
-      valor = st.number_input(
-          "Valor a ser pago (R$)", min_value=0.0, format="%.2f"
-      )
-      tipo_operacao = st.selectbox(
-          "Tipo de Operação", ["VALE", "PAGAMENTO", "ADIANTAMENTO"]
-      )
-
-    with col3:
-      st.markdown("##### 🏦 Dados Bancários")
-      banco = st.text_input("Banco Portador", value="")
-      tipo_pagamento = st.text_input(
-          "Tipo (ex: PIX, Dinheiro, Depósito)", value=""
-      )
-
-    st.markdown("---")
-    col4, col5, col6 = st.columns(3)
-    with col4:
-      agencia = st.text_input("Agência", value="")
-    with col5:
-      conta = st.text_input("Conta", value="")
-    with col6:
-      chave_pix = st.text_input("Chave PIX", value="")
-
-    titular = st.text_input(
-        "Titular da Conta (Opcional - preenche com o nome se vazio)"
-    )
-
-    st.markdown("")
-    submitted = st.form_submit_button(
-        "🚀 Gerar Recibo em PDF e Salvar no Relatório"
-    )
-
-  if submitted:
-    if not funcionario:
-      st.error("Por favor, preencha o nome do funcionário.")
-    else:
-      dados_novo = {
-          "FUNCIONÁRIO(A)": funcionario,
-          "VALOR A SER PAGO": valor,
-          "BANCO PORTADOR": banco,
-          "TIPO": tipo_pagamento,
-          "AGENCIA": agencia,
-          "CONTA": conta,
-          "CHAVE PIX": chave_pix,
-          "TITULAR DA CONTA": titular if titular else funcionario,
-          "EQUIPE": equipe,
-          "TIPO DE OPERAÇÃO/ DESCRIÇÃO": tipo_operacao,
-          "STATUS": "PAGO",
-          "DATA": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-      }
-
-      # 1. Salvar no Relatório (Excel)
-      if os.path.exists(EXCEL_RELATORIO):
-        df_existente = pd.read_excel(EXCEL_RELATORIO)
-        df_novo = pd.concat(
-            [df_existente, pd.DataFrame([dados_novo])], ignore_index=True
-        )
+      if not empresa_encontrada.empty:
+        st.session_state["autenticado"] = True
+        st.session_state["usuario"] = usuario_input
+        st.session_state["razao_social"] = empresa_encontrada.iloc[0][
+            "razao_social"
+        ]
+        st.session_state["cnpj"] = empresa_encontrada.iloc[0]["cnpj"]
+        st.success("Login realizado com sucesso! Carregando sistema...")
+        st.rerun()
       else:
-        df_novo = pd.DataFrame([dados_novo])
-
-      df_novo.to_excel(EXCEL_RELATORIO, index=False)
-
-      # 2. Gerar PDF do Recibo
-      pdf_filename = f"recibo_{funcionario.replace(' ', '_')}.pdf"
-      gerar_pdf_recibo(dados_novo, pdf_filename)
-
-      st.success(
-          "✨ Recibo gerado com sucesso e adicionado ao relatório de"
-          " acompanhamento!"
-      )
-
-      # Botão elegante para download do PDF
-      with open(pdf_filename, "rb") as pdf_file:
-        st.download_button(
-            label="📥 Clique aqui para baixar o PDF do Recibo",
-            data=pdf_file,
-            file_name=pdf_filename,
-            mime="application/pdf",
+        st.error(
+            "Usuário ou senha inválidos. (Exemplo padrão: a3_aluminio /"
+            " 123456)"
         )
 
-with aba_relatorio:
-  st.subheader("📊 Acompanhamento de Pagamentos e Vales")
+  with st.expander("ℹ️ Empresas de Demonstração para Teste"):
+    st.markdown("- **Usuário:** `a3_aluminio` | **Senha:** `123456`")
+    st.markdown("- **Usuário:** `construtora_alpha` | **Senha:** `123456`")
 
-  if os.path.exists(EXCEL_RELATORIO):
-    df_rel = pd.read_excel(EXCEL_RELATORIO)
+else:
+  # --- INTERFACE PRINCIPAL (APÓS O LOGIN) ---
+  usuario_atual = st.session_state["usuario"]
+  razao_social_atual = st.session_state["razao_social"]
+  cnpj_atual = st.session_state["cnpj"]
+  excel_relatorio = f"relatorio_pagamentos_{usuario_atual}.xlsx"
 
-    # Cards de Métricas Estilizadas
-    col_m1, col_m2, col_m3 = st.columns(3)
-    total_pago = df_rel["VALOR A SER PAGO"].sum()
-    total_registros = len(df_rel)
+  # Barra lateral com informações da empresa e botão de saída
+  with st.sidebar:
+    st.subheader("🏢 Empresa Conectada")
+    st.info(f"**{razao_social_atual}**\n\nCNPJ: {cnpj_atual}")
+    if st.button("🚪 Sair / Logout"):
+      st.session_state["autenticado"] = False
+      st.session_state["usuario"] = None
+      st.session_state["razao_social"] = None
+      st.session_state["cnpj"] = None
+      st.rerun()
 
-    col_m1.metric(
-        label="💵 Valor Total Lançado", value=f"R$ {total_pago:,.2f}"
-    )
-    col_m2.metric(label="📋 Total de Recibos Emitidos", value=total_registros)
-    col_m3.metric(
-        label="🏢 Equipes Atendidas", value=df_rel["EQUIPE"].nunique()
-    )
+  st.title("💹 Sistema de Emissão de Recibos e Vales")
+  st.markdown(
+      "Gerencie pagamentos e emissores de recibos para"
+      f" **{razao_social_atual}** de forma rápida e organizada."
+  )
+  st.divider()
 
-    st.markdown("---")
+  # Criação de Abas para Organização
+  aba_emissao, aba_relatorio = st.tabs(
+      ["📝 Emitir Novo Recibo", "📊 Relatório e Histórico"]
+  )
 
-    # Exibição da tabela interativa
-    st.dataframe(df_rel, use_container_width=True)
+  with aba_emissao:
+    st.subheader("Preencha os dados do recibo")
 
-    st.markdown("")
-    # Botão para baixar a planilha completa
-    with open(EXCEL_RELATORIO, "rb") as excel_file:
-      st.download_button(
-          label="📥 Baixar Planilha Consolidada (Excel)",
-          data=excel_file,
-          file_name="relatorio_pagamentos.xlsx",
-          mime=(
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          ),
+    with st.form("form_recibo", clear_on_submit=False):
+      col1, col2, col3 = st.columns(3)
+
+      with col1:
+        st.markdown("##### 👤 Colaborador")
+        funcionario = st.text_input("Nome do Funcionário(a)")
+        equipe = st.selectbox("Equipe", ["NOITE", "MANHA", "TARDE", "GERAL"])
+
+      with col2:
+        st.markdown("##### 💰 Financeiro")
+        valor = st.number_input(
+            "Valor a ser pago (R$)", min_value=0.0, format="%.2f"
+        )
+        tipo_operacao = st.selectbox(
+            "Tipo de Operação", ["VALE", "PAGAMENTO", "ADIANTAMENTO"]
+        )
+
+      with col3:
+        st.markdown("##### 🏦 Dados Bancários")
+        banco = st.text_input("Banco Portador", value="")
+        tipo_pagamento = st.text_input(
+            "Tipo (ex: PIX, Dinheiro, Depósito)", value=""
+        )
+
+      st.markdown("---")
+      col4, col5, col6 = st.columns(3)
+      with col4:
+        agencia = st.text_input("Agência", value="")
+      with col5:
+        conta = st.text_input("Conta", value="")
+      with col6:
+        chave_pix = st.text_input("Chave PIX", value="")
+
+      titular = st.text_input(
+          "Titular da Conta (Opcional - preenche com o nome se vazio)"
       )
-  else:
-    st.info(
-        "Ainda não há registros salvos. Emita o primeiro recibo na aba ao"
-        " lado!"
-    )
+
+      st.markdown("")
+      submitted = st.form_submit_button(
+          "🚀 Gerar Recibo em PDF e Salvar no Relatório"
+      )
+
+    if submitted:
+      if not funcionario:
+        st.error("Por favor, preencha o nome do funcionário.")
+      else:
+        dados_novo = {
+            "FUNCIONÁRIO(A)": funcionario,
+            "VALOR A SER PAGO": valor,
+            "BANCO PORTADOR": banco,
+            "TIPO": tipo_pagamento,
+            "AGENCIA": agencia,
+            "CONTA": conta,
+            "CHAVE PIX": chave_pix,
+            "TITULAR DA CONTA": titular if titular else funcionario,
+            "EQUIPE": equipe,
+            "TIPO DE OPERAÇÃO/ DESCRIÇÃO": tipo_operacao,
+            "STATUS": "PAGO",
+            "DATA": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        # 1. Salvar no Relatório (Excel isolado por empresa)
+        if os.path.exists(excel_relatorio):
+          df_existente = pd.read_excel(excel_relatorio)
+          df_novo = pd.concat(
+              [df_existente, pd.DataFrame([dados_novo])], ignore_index=True
+          )
+        else:
+          df_novo = pd.DataFrame([dados_novo])
+
+        df_novo.to_excel(excel_relatorio, index=False)
+
+        # 2. Gerar PDF do Recibo com os dados da empresa logada
+        pdf_filename = f"recibo_{funcionario.replace(' ', '_')}.pdf"
+        gerar_pdf_recibo(
+            dados_novo, razao_social_atual, cnpj_atual, pdf_filename
+        )
+
+        st.success(
+            "✨ Recibo gerado com sucesso e adicionado ao relatório de"
+            " acompanhamento!"
+        )
+
+        # Botão elegante para download do PDF
+        with open(pdf_filename, "rb") as pdf_file:
+          st.download_button(
+              label="📥 Clique aqui para baixar o PDF do Recibo",
+              data=pdf_file,
+              file_name=pdf_filename,
+              mime="application/pdf",
+          )
+
+  with aba_relatorio:
+    st.subheader("📊 Acompanhamento de Pagamentos e Vales")
+
+    if os.path.exists(excel_relatorio):
+      df_rel = pd.read_excel(excel_relatorio)
+
+      # Cards de Métricas Estilizadas
+      col_m1, col_m2, col_m3 = st.columns(3)
+      total_pago = df_rel["VALOR A SER PAGO"].sum()
+      total_registros = len(df_rel)
+
+      col_m1.metric(
+          label="💵 Valor Total Lançado", value=f"R$ {total_pago:,.2f}"
+      )
+      col_m2.metric(label="📋 Total de Recibos Emitidos", value=total_registros)
+      col_m3.metric(
+          label="🏢 Equipes Atendidas", value=df_rel["EQUIPE"].nunique()
+      )
+
+      st.markdown("---")
+
+      # Exibição da tabela interativa
+      st.dataframe(df_rel, use_container_width=True)
+
+      st.markdown("")
+      # Botão para baixar a planilha completa
+      with open(excel_relatorio, "rb") as excel_file:
+        st.download_button(
+            label="📥 Baixar Planilha Consolidada da Empresa (Excel)",
+            data=excel_file,
+            file_name=f"relatorio_{usuario_atual}.xlsx",
+            mime=(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            ),
+        )
+    else:
+      st.info(
+          "Ainda não há registros salvos para esta empresa. Emita o primeiro"
+          " recibo na aba ao lado!"
+      )
