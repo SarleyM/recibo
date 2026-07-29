@@ -215,8 +215,8 @@ if not st.session_state["autenticado"]:
   # Criando colunas para centralizar e diminuir a largura visual da caixa de login
   _, col_centro, _ = st.columns([1, 1.2, 1])
 
-  with col_centro:
      st.image("gutaflow.png", width=140)
+      
     if not st.session_state["modo_cadastro"]:
       st.markdown(
           "<h3 style='text-align: center;'>Acesso ao Sistema</h3>",
