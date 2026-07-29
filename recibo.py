@@ -216,13 +216,7 @@ if not st.session_state["autenticado"]:
   _, col_centro, _ = st.columns([1, 1.2, 1])
 
   with col_centro:
-    # --- ÁREA DO LOGO DA EMPRESA (CENTRALIZADO) ---
-
-    st.image("gutaflow.png", width=140)
-
-    # Ícone/Título centralizado representando o topo corporativo
-    st.markdown("<h2 style='text-align: center;'>🤝</h2>", unsafe_allow_html=True)
-
+     st.image("gutaflow.png", width=140)
     if not st.session_state["modo_cadastro"]:
       st.markdown(
           "<h3 style='text-align: center;'>Acesso ao Sistema</h3>",
