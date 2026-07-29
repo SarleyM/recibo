@@ -218,40 +218,77 @@ if "autenticado" not in st.session_state:
 if not st.session_state["autenticado"]:
   st.title("🔐 Acesso ao Sistema de Recibos")
   st.markdown(
-      "Faça login com as credenciais da sua empresa para emitir e gerenciar"
-      " recibos."
+      "Faça login com as credenciais da sua empresa ou cadastre uma nova"
+      " empresa abaixo."
   )
 
-  with st.form("form_login"):
-    usuario_input = st.text_input("Usuário da Empresa")
-    senha_input = st.text_input("Senha", type="password")
-    btn_login = st.form_submit_button("Entrar no Sistema")
+  # Criando abas na tela de login para alternar entre Entrar e Cadastrar
+  aba_login, aba_cadastro = st.tabs(["🔑 Entrar", "🏢 Cadastrar Nova Empresa"])
 
-    if btn_login:
-      df_empresas = pd.read_csv(DB_EMPRESAS)
-      empresa_encontrada = df_empresas[
-          (df_empresas["usuario"] == usuario_input)
-          & (df_empresas["senha"] == hash_senha(senha_input))
-      ]
+  with aba_login:
+    with st.form("form_login"):
+      usuario_input = st.text_input("Usuário da Empresa")
+      senha_input = st.text_input("Senha", type="password")
+      btn_login = st.form_submit_button("Entrar no Sistema")
 
-      if not empresa_encontrada.empty:
-        st.session_state["autenticado"] = True
-        st.session_state["usuario"] = usuario_input
-        st.session_state["razao_social"] = empresa_encontrada.iloc[0][
-            "razao_social"
+      if btn_login:
+        df_empresas = pd.read_csv(DB_EMPRESAS)
+        empresa_encontrada = df_empresas[
+            (df_empresas["usuario"] == usuario_input)
+            & (df_empresas["senha"] == hash_senha(senha_input))
         ]
-        st.session_state["cnpj"] = empresa_encontrada.iloc[0]["cnpj"]
-        st.success("Login realizado com sucesso! Carregando sistema...")
-        st.rerun()
-      else:
-        st.error(
-            "Usuário ou senha inválidos. (Exemplo padrão: a3_aluminio /"
-            " 123456)"
-        )
 
-  with st.expander("ℹ️ Empresas de Demonstração para Teste"):
-    st.markdown("- **Usuário:** `a3_aluminio` | **Senha:** `123456`")
-    st.markdown("- **Usuário:** `construtora_alpha` | **Senha:** `123456`")
+        if not empresa_encontrada.empty:
+          st.session_state["autenticado"] = True
+          st.session_state["usuario"] = usuario_input
+          st.session_state["razao_social"] = empresa_encontrada.iloc[0][
+              "razao_social"
+          ]
+          st.session_state["cnpj"] = empresa_encontrada.iloc[0]["cnpj"]
+          st.success("Login realizado com sucesso! Carregando sistema...")
+          st.rerun()
+        else:
+          st.error("Usuário ou senha inválidos.")
+
+    with st.expander("ℹ️ Empresas de Demonstração para Teste"):
+      st.markdown("- **Usuário:** `a3_aluminio` | **Senha:** `123456`")
+      st.markdown("- **Usuário:** `construtora_alpha` | **Senha:** `123456`")
+
+  with aba_cadastro:
+    with st.form("form_cadastro_empresa"):
+      nova_razao = st.text_input("Razão Social da Empresa")
+      novo_cnpj = st.text_input("CNPJ")
+      novo_usuario = st.text_input("Nome de Usuário para Acesso")
+      nova_senha = st.text_input("Senha", type="password")
+      btn_cadastrar = st.form_submit_button("✨ Cadastrar Empresa")
+
+      if btn_cadastrar:
+        if (
+            not nova_razao
+            or not novo_cnpj
+            or not novo_usuario
+            or not nova_senha
+        ):
+          st.error("Por favor, preencha todos os campos do cadastro.")
+        else:
+          df_empresas = pd.read_csv(DB_EMPRESAS)
+          if novo_usuario in df_empresas["usuario"].values:
+            st.error("Este nome de usuário já existe. Escolha outro.")
+          else:
+            nova_linha = pd.DataFrame([{
+                "usuario": novo_usuario,
+                "senha": hash_senha(nova_senha),
+                "razao_social": nova_razao,
+                "cnpj": novo_cnpj,
+            }])
+            df_empresas = pd.concat(
+                [df_empresas, nova_linha], ignore_index=True
+            )
+            df_empresas.to_csv(DB_EMPRESAS, index=False)
+            st.success(
+                "Empresa cadastrada com sucesso! Vá para a aba 'Entrar' e"
+                " acesse o sistema."
+            )
 
 else:
   # --- INTERFACE PRINCIPAL (APÓS O LOGIN) ---
