@@ -9,7 +9,7 @@ import streamlit as st
 
 # Configuração da Página do Streamlit
 st.set_page_config(
-    page_title="Guta FLow - Recibos",
+    page_title="Guta Flow - Recibos",
     page_icon="🤝",
     layout="wide",
 )
@@ -215,8 +215,10 @@ if not st.session_state["autenticado"]:
   # Criando colunas para centralizar e diminuir a largura visual da caixa de login
   _, col_centro, _ = st.columns([1, 1.2, 1])
 
-     st.image("gutaflow.png", width=140)
-      
+  with col_centro:
+    # Exibindo o logo centralizado (certifique-se de que o arquivo 'gutaflow.png' está na mesma pasta)
+    st.image("gutaflow.png", width=140, use_container_width=False)
+
     if not st.session_state["modo_cadastro"]:
       st.markdown(
           "<h3 style='text-align: center;'>Acesso ao Sistema</h3>",
