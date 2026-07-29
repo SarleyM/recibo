@@ -7,14 +7,14 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import streamlit as st
 
-# Configuração da Página do Streamlit com ícone customizado
+# Configuração da Página do Streamlit
 st.set_page_config(
-    page_title="Sistema Multiempresa de Recibos",
+    page_title="Guta FLow - Recibos",
     page_icon="🤝",
     layout="wide",
 )
 
-# Estilização CSS customizada para deixar o visual moderno
+# Estilização CSS customizada para botões e espaçamentos
 st.markdown("""
     <style>
         .main {
@@ -73,11 +73,9 @@ def gerar_pdf_recibo(dados, razao_social, cnpj_empresa, filename="recibo.pdf"):
   c = canvas.Canvas(filename, pagesize=A4)
   largura, altura = A4
 
-  # Cabeçalho decorativo superior
   c.setFillColor(colors.HexColor("#1b5e20"))
   c.rect(0, altura - 20, largura, 20, fill=1, stroke=0)
 
-  # Cabeçalho da Empresa (Dinâmico com base no Login)
   c.setFillColor(colors.black)
   c.setFont("Helvetica-Bold", 12)
   c.drawString(50, altura - 55, razao_social)
@@ -89,12 +87,10 @@ def gerar_pdf_recibo(dados, razao_social, cnpj_empresa, filename="recibo.pdf"):
   c.setFillColor(colors.HexColor("#2e7d32"))
   c.drawCentredString(largura / 2, altura - 110, "RECIBO DE PAGAMENTO / VALE")
 
-  # Linha divisória
   c.setStrokeColor(colors.HexColor("#cccccc"))
   c.setLineWidth(1)
   c.line(50, altura - 125, largura - 50, altura - 125)
 
-  # Informações principais
   c.setFont("Helvetica-Bold", 10)
   c.setFillColor(colors.HexColor("#555555"))
   y = altura - 155
@@ -129,7 +125,6 @@ def gerar_pdf_recibo(dados, razao_social, cnpj_empresa, filename="recibo.pdf"):
   c.drawString(220, y, f"{datetime.now().strftime('%d/%m/%Y às %H:%M')}")
 
   y -= 45
-  # Tabela de Valores (Caixa de Destaque)
   c.setFillColor(colors.HexColor("#f1f8e9"))
   c.rect(50, y - 45, largura - 100, 45, fill=1, stroke=1)
   c.setStrokeColor(colors.HexColor("#c8e6c9"))
@@ -140,7 +135,6 @@ def gerar_pdf_recibo(dados, razao_social, cnpj_empresa, filename="recibo.pdf"):
   c.drawRightString(largura - 65, y - 28, f"R$ {dados['VALOR A SER PAGO']:.2f}")
 
   y -= 80
-  # Dados Bancários
   c.setFont("Helvetica-Bold", 12)
   c.setFillColor(colors.HexColor("#333333"))
   c.drawString(50, y, "DADOS BANCÁRIOS / PAGAMENTO")
@@ -193,7 +187,6 @@ def gerar_pdf_recibo(dados, razao_social, cnpj_empresa, filename="recibo.pdf"):
   c.setFillColor(colors.black)
   c.drawString(380, y, f"{dados['TITULAR DA CONTA']}")
 
-  # Assinatura
   y -= 130
   c.setStrokeColor(colors.HexColor("#333333"))
   c.setLineWidth(1)
@@ -219,92 +212,106 @@ if "modo_cadastro" not in st.session_state:
   st.session_state["modo_cadastro"] = False
 
 if not st.session_state["autenticado"]:
-  if not st.session_state["modo_cadastro"]:
-    # TELA DE LOGIN
-    st.title("🔐 Acesso ao Sistema de Recibos")
-    st.markdown("Faça login com as credenciais da sua empresa.")
+  # Criando colunas para centralizar e diminuir a largura visual da caixa de login
+  _, col_centro, _ = st.columns([1, 1.2, 1])
 
-    with st.form("form_login"):
-      usuario_input = st.text_input("Usuário da Empresa")
-      senha_input = st.text_input("Senha", type="password")
-      btn_login = st.form_submit_button("Entrar no Sistema")
+  with col_centro:
+    # --- ÁREA DO LOGO DA EMPRESA (CENTRALIZADO) ---
 
-      if btn_login:
-        df_empresas = pd.read_csv(DB_EMPRESAS)
-        empresa_encontrada = df_empresas[
-            (df_empresas["usuario"] == usuario_input)
-            & (df_empresas["senha"] == hash_senha(senha_input))
-        ]
+    st.image("logo.png", width=140)
 
-        if not empresa_encontrada.empty:
-          st.session_state["autenticado"] = True
-          st.session_state["usuario"] = usuario_input
-          st.session_state["razao_social"] = empresa_encontrada.iloc[0][
-              "razao_social"
-          ]
-          st.session_state["cnpj"] = empresa_encontrada.iloc[0]["cnpj"]
-          st.success("Login realizado com sucesso! Carregando sistema...")
-          st.rerun()
-        else:
-          st.error("Usuário ou senha inválidos.")
+    # Ícone/Título centralizado representando o topo corporativo
+    st.markdown("<h2 style='text-align: center;'>🤝</h2>", unsafe_allow_html=True)
 
-    with st.expander("ℹ️ Empresas de Demonstração para Teste"):
-      st.markdown("- **Usuário:** `a3_aluminio` | **Senha:** `123456`")
-      st.markdown("- **Usuário:** `construtora_alpha` | **Senha:** `123456`")
+    if not st.session_state["modo_cadastro"]:
+      st.markdown(
+          "<h3 style='text-align: center;'>Acesso ao Sistema</h3>",
+          unsafe_allow_html=True,
+      )
 
-    st.markdown("---")
-    st.markdown("Ainda não tem cadastro para sua empresa?")
-    if st.button("🏢 Cadastrar Nova Empresa"):
-      st.session_state["modo_cadastro"] = True
-      st.rerun()
+      with st.form("form_login"):
+        usuario_input = st.text_input("Usuário da Empresa")
+        senha_input = st.text_input("Senha", type="password")
+        btn_login = st.form_submit_button("Entrar no Sistema")
 
-  else:
-    # TELA DE CADASTRO COM CAMPOS QUE LIMPAM APÓS O SUCESSO
-    st.title("🏢 Cadastro de Nova Empresa")
-    st.markdown(
-        "Preencha os dados abaixo para registrar sua empresa no sistema."
-    )
-
-    with st.form("form_cadastro_empresa", clear_on_submit=True):
-      nova_razao = st.text_input("Razão Social da Empresa")
-      novo_cnpj = st.text_input("CNPJ")
-      novo_usuario = st.text_input("Nome de Usuário para Acesso")
-      nova_senha = st.text_input("Senha", type="password")
-
-      btn_cadastrar = st.form_submit_button("✨ Finalizar Cadastro")
-
-      if btn_cadastrar:
-        if (
-            not nova_razao
-            or not novo_cnpj
-            or not novo_usuario
-            or not nova_senha
-        ):
-          st.error("Por favor, preencha todos os campos do cadastro.")
-        else:
+        if btn_login:
           df_empresas = pd.read_csv(DB_EMPRESAS)
-          if novo_usuario in df_empresas["usuario"].values:
-            st.error("Este nome de usuário já existe. Escolha outro.")
-          else:
-            nova_linha = pd.DataFrame([{
-                "usuario": novo_usuario,
-                "senha": hash_senha(nova_senha),
-                "razao_social": nova_razao,
-                "cnpj": novo_cnpj,
-            }])
-            df_empresas = pd.concat(
-                [df_empresas, nova_linha], ignore_index=True
-            )
-            df_empresas.to_csv(DB_EMPRESAS, index=False)
-            st.success(
-                "Empresa cadastrada com sucesso! Os campos foram limpos para"
-                " novo cadastro."
-            )
+          empresa_encontrada = df_empresas[
+              (df_empresas["usuario"] == usuario_input)
+              & (df_empresas["senha"] == hash_senha(senha_input))
+          ]
 
-    st.markdown("---")
-    if st.button("🔙 Voltar para a Tela de Login"):
-      st.session_state["modo_cadastro"] = False
-      st.rerun()
+          if not empresa_encontrada.empty:
+            st.session_state["autenticado"] = True
+            st.session_state["usuario"] = usuario_input
+            st.session_state["razao_social"] = empresa_encontrada.iloc[0][
+                "razao_social"
+            ]
+            st.session_state["cnpj"] = empresa_encontrada.iloc[0]["cnpj"]
+            st.success("Login realizado com sucesso! Carregando...")
+            st.rerun()
+          else:
+            st.error("Usuário ou senha inválidos.")
+
+      with st.expander("ℹ️ Empresas de Demonstração"):
+        st.markdown("- **Usuário:** `a3_aluminio` | **Senha:** `123456`")
+        st.markdown("- **Usuário:** `construtora_alpha` | **Senha:** `123456`")
+
+      st.markdown("---")
+      st.markdown(
+          "<p style='text-align: center; margin-bottom: 5px;'>Ainda não tem"
+          " cadastro?</p>",
+          unsafe_allow_html=True,
+      )
+      if st.button("🏢 Cadastrar Nova Empresa"):
+        st.session_state["modo_cadastro"] = True
+        st.rerun()
+
+    else:
+      st.markdown(
+          "<h3 style='text-align: center;'>Cadastro de Nova Empresa</h3>",
+          unsafe_allow_html=True,
+      )
+
+      with st.form("form_cadastro_empresa", clear_on_submit=True):
+        nova_razao = st.text_input("Razão Social da Empresa")
+        novo_cnpj = st.text_input("CNPJ")
+        novo_usuario = st.text_input("Nome de Usuário para Acesso")
+        nova_senha = st.text_input("Senha", type="password")
+
+        btn_cadastrar = st.form_submit_button("✨ Finalizar Cadastro")
+
+        if btn_cadastrar:
+          if (
+              not nova_razao
+              or not novo_cnpj
+              or not novo_usuario
+              or not nova_senha
+          ):
+            st.error("Por favor, preencha todos os campos do cadastro.")
+          else:
+            df_empresas = pd.read_csv(DB_EMPRESAS)
+            if novo_usuario in df_empresas["usuario"].values:
+              st.error("Este nome de usuário já existe. Escolha outro.")
+            else:
+              nova_linha = pd.DataFrame([{
+                  "usuario": novo_usuario,
+                  "senha": hash_senha(nova_senha),
+                  "razao_social": nova_razao,
+                  "cnpj": novo_cnpj,
+              }])
+              df_empresas = pd.concat(
+                  [df_empresas, nova_linha], ignore_index=True
+              )
+              df_empresas.to_csv(DB_EMPRESAS, index=False)
+              st.success(
+                  "Empresa cadastrada com sucesso! Os campos foram limpos."
+              )
+
+      st.markdown("---")
+      if st.button("🔙 Voltar para o Login"):
+        st.session_state["modo_cadastro"] = False
+        st.rerun()
 
 else:
   # --- INTERFACE PRINCIPAL (APÓS O LOGIN) ---
@@ -313,7 +320,6 @@ else:
   cnpj_atual = st.session_state["cnpj"]
   excel_relatorio = f"relatorio_pagamentos_{usuario_atual}.xlsx"
 
-  # Barra lateral com informações da empresa e botão de saída
   with st.sidebar:
     st.subheader("🏢 Empresa Conectada")
     st.info(f"**{razao_social_atual}**\n\nCNPJ: {cnpj_atual}")
@@ -331,7 +337,6 @@ else:
   )
   st.divider()
 
-  # Criação de Abas para Organização
   aba_emissao, aba_relatorio = st.tabs(
       ["📝 Emitir Novo Recibo", "📊 Relatório e Histórico"]
   )
@@ -400,7 +405,6 @@ else:
             "DATA": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
-        # 1. Salvar no Relatório (Excel isolado por empresa)
         if os.path.exists(excel_relatorio):
           df_existente = pd.read_excel(excel_relatorio)
           df_novo = pd.concat(
@@ -411,7 +415,6 @@ else:
 
         df_novo.to_excel(excel_relatorio, index=False)
 
-        # 2. Gerar PDF do Recibo com os dados da empresa logada
         pdf_filename = f"recibo_{funcionario.replace(' ', '_')}.pdf"
         gerar_pdf_recibo(
             dados_novo, razao_social_atual, cnpj_atual, pdf_filename
@@ -422,7 +425,6 @@ else:
             " acompanhamento!"
         )
 
-        # Botão elegante para download do PDF
         with open(pdf_filename, "rb") as pdf_file:
           st.download_button(
               label="📥 Clique aqui para baixar o PDF do Recibo",
@@ -437,7 +439,6 @@ else:
     if os.path.exists(excel_relatorio):
       df_rel = pd.read_excel(excel_relatorio)
 
-      # Cards de Métricas Estilizadas
       col_m1, col_m2, col_m3 = st.columns(3)
       total_pago = df_rel["VALOR A SER PAGO"].sum()
       total_registros = len(df_rel)
@@ -451,12 +452,9 @@ else:
       )
 
       st.markdown("---")
-
-      # Exibição da tabela interativa
       st.dataframe(df_rel, use_container_width=True)
 
       st.markdown("")
-      # Botão para baixar a planilha completa
       with open(excel_relatorio, "rb") as excel_file:
         st.download_button(
             label="📥 Baixar Planilha Consolidada da Empresa (Excel)",
