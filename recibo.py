@@ -217,7 +217,7 @@ if not st.session_state["autenticado"]:
 
   col_img1, col_img2, col_img3 = col_centro.columns([1, 1, 1])
     with col_img2:
-      st.image("gutaflow.png", width=140)
+      st.image("gutaflow.png", width=180)
 
     if not st.session_state["modo_cadastro"]:
       st.markdown(
