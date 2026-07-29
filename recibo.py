@@ -451,20 +451,70 @@ else:
         if os.path.exists(excel_relatorio):
             df_rel = pd.read_excel(excel_relatorio)
 
+            # --- FILTROS PARA O RELATÓRIO ---
+            with st.expander("🔍 Filtros de Busca e Período", expanded=True):
+                col_f1, col_f2, col_f3 = st.columns(3)
+                
+                with col_f1:
+                    # Filtro por Equipe
+                    equipes_disponiveis = ["Todas"] + list(df_rel["EQUIPE"].dropna().unique())
+                    equipe_filtro = st.selectbox("Filtrar por Equipe", equipes_disponiveis)
+                
+                with col_f2:
+                    # Filtro por Tipo de Operação
+                    tipos_disponiveis = ["Todas"] + list(df_rel["TIPO DE OPERAÇÃO/ DESCRIÇÃO"].dropna().unique())
+                    tipo_filtro = st.selectbox("Filtrar por Operação", tipos_disponiveis)
+
+                with col_f3:
+                    # Busca rápida por texto (funcionário)
+                    busca_func = st.text_input("Buscar Funcionário(a)", value="")
+
+            # Aplicando os filtros no DataFrame
+            df_filtrado = df_rel.copy()
+            if equipe_filtro != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["EQUIPE"] == equipe_filtro]
+            if tipo_filtro != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["TIPO DE OPERAÇÃO/ DESCRIÇÃO"] == tipo_filtro]
+            if busca_func:
+                df_filtrado = df_filtrado[df_filtrado["FUNCIONÁRIO(A)"].str.contains(busca_func, case=False, na=False)]
+
+            st.markdown("---")
+
+            # --- MÉTRICAS ATUALIZADAS COM O FILTRO ---
             col_m1, col_m2, col_m3 = st.columns(3)
-            total_pago = df_rel["VALOR A SER PAGO"].sum()
-            total_registros = len(df_rel)
+            total_pago = df_filtrado["VALOR A SER PAGO"].sum()
+            total_registros = len(df_filtrado)
 
             col_m1.metric(
-                label="💵 Valor Total Lançado", value=f"R$ {total_pago:,.2f}"
+                label="💵 Valor Total Filtrado", value=f"R$ {total_pago:,.2f}"
             )
-            col_m2.metric(label="📋 Total de Recibos Emitidos", value=total_registros)
+            col_m2.metric(label="📋 Total de Recibos Filtrados", value=total_registros)
             col_m3.metric(
-                label="🏢 Equipes Atendidas", value=df_rel["EQUIPE"].nunique()
+                label="🏢 Equipes Atendidas", value=df_filtrado["EQUIPE"].nunique() if not df_filtrado.empty else 0
             )
 
             st.markdown("---")
-            st.dataframe(df_rel, use_container_width=True)
+
+            # --- GRÁFICOS VISUAIS ---
+            if not df_filtrado.empty:
+                col_g1, col_g2 = st.columns(2)
+                
+                with col_g1:
+                    st.markdown("##### 📊 Total por Equipe (R$)")
+                    if "EQUIPE" in df_filtrado.columns and "VALOR A SER PAGO" in df_filtrado.columns:
+                        df_chart_equipe = df_filtrado.groupby("EQUIPE")["VALOR A SER PAGO"].sum()
+                        st.bar_chart(df_chart_equipe)
+
+                with col_g2:
+                    st.markdown("##### 📈 Total por Tipo de Operação (R$)")
+                    if "TIPO DE OPERAÇÃO/ DESCRIÇÃO" in df_filtrado.columns and "VALOR A SER PAGO" in df_filtrado.columns:
+                        df_chart_op = df_filtrado.groupby("TIPO DE OPERAÇÃO/ DESCRIÇÃO")["VALOR A SER PAGO"].sum()
+                        st.bar_chart(df_chart_op)
+
+                st.markdown("---")
+
+            # --- TABELA DE DADOS ---
+            st.dataframe(df_filtrado, use_container_width=True)
 
             st.markdown("")
             with open(excel_relatorio, "rb") as excel_file:
