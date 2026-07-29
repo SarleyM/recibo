@@ -229,7 +229,11 @@ if not st.session_state["autenticado"]:
             with st.form("form_login"):
                 usuario_input = st.text_input("Usuário da Empresa")
                 senha_input = st.text_input("Senha", type="password")
-                btn_login = st.form_submit_button("Entrar no Sistema")
+                
+                # Centralizando o botão de submit do login com colunas internas
+                bc1, bc2, bc3 = st.columns([1, 2, 1])
+                with bc2:
+                    btn_login = st.form_submit_button("Entrar no Sistema")
 
                 if btn_login:
                     df_empresas = pd.read_csv(DB_EMPRESAS)
@@ -260,9 +264,13 @@ if not st.session_state["autenticado"]:
                 " cadastro?</p>",
                 unsafe_allow_html=True,
             )
-            if st.button("🏢 Cadastrar Nova Empresa"):
-                st.session_state["modo_cadastro"] = True
-                st.rerun()
+            
+            # Centralizando o botão "Cadastrar Nova Empresa" fora do form
+            bc_cad1, bc_cad2, bc_cad3 = st.columns([1, 2, 1])
+            with bc_cad2:
+                if st.button("🏢 Cadastrar Nova Empresa"):
+                    st.session_state["modo_cadastro"] = True
+                    st.rerun()
 
         else:
             st.markdown(
@@ -276,7 +284,10 @@ if not st.session_state["autenticado"]:
                 novo_usuario = st.text_input("Nome de Usuário para Acesso")
                 nova_senha = st.text_input("Senha", type="password")
 
-                btn_cadastrar = st.form_submit_button("✨ Finalizar Cadastro")
+                # Centralizando o botão de submit do cadastro com colunas internas
+                bcc1, bcc2, bcc3 = st.columns([1, 2, 1])
+                with bcc2:
+                    btn_cadastrar = st.form_submit_button("✨ Finalizar Cadastro")
 
                 if btn_cadastrar:
                     if (
@@ -306,9 +317,13 @@ if not st.session_state["autenticado"]:
                             )
 
             st.markdown("---")
-            if st.button("🔙 Voltar para o Login"):
-                st.session_state["modo_cadastro"] = False
-                st.rerun()
+            
+            # Centralizando o botão "Voltar para o Login" fora do form
+            bc_vol1, bc_vol2, bc_vol3 = st.columns([1, 2, 1])
+            with bc_vol2:
+                if st.button("🔙 Voltar para o Login"):
+                    st.session_state["modo_cadastro"] = False
+                    st.rerun()
 
 else:
     # --- INTERFACE PRINCIPAL (APÓS O LOGIN) ---
